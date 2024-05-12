@@ -9,9 +9,34 @@ import (
 	"context"
 )
 
+const checkUserByEmail = `-- name: CheckUserByEmail :one
+SELECT COUNT(*) FROM users WHERE email = $1
+`
+
+func (q *Queries) CheckUserByEmail(ctx context.Context, email string) (int64, error) {
+	row := q.db.QueryRow(ctx, checkUserByEmail, email)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (username, email, password) VALUES ($1, $2, $3)
+`
+
+type CreateUserParams struct {
+	Username string
+	Email    string
+	Password string
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.Exec(ctx, createUser, arg.Username, arg.Email, arg.Password)
+	return err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password FROM users
-    WHERE email == $1
+SELECT id, username, email, password FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {

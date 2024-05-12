@@ -1,46 +1,79 @@
 package user
 
 import (
-	"championForge/types"
-	"encoding/json"
+	"championForge/common"
+	"championForge/common/types"
+	"championForge/config"
+	"championForge/db"
 	"fmt"
-	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Handler struct {
-	userStore *Store
+	userStore Store
 }
 
-func NewHandler(userStore *Store) *Handler {
+func NewHandler(userStore Store) *Handler {
 	return &Handler{userStore}
 }
 
-func (h *Handler) RegisterRoutes(router *chi.Mux) {
-	router.Route("/api/user", func(r chi.Router) {
-		r.Post("/register", h.handleRegister)
-		r.Post("/login", h.handleLogin)
-		r.Get("/", h.getUsers)
-	})
+func (h *Handler) RegisterRoutes(router fiber.Router) {
+	router.Post("/register", h.handleRegister)
+	router.Post("/login", h.handleLogin)
+	router.Get("/", h.getUsers)
 }
 
-func (h *Handler)handleRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Register")
+func (h *Handler) handleRegister(c *fiber.Ctx) error {
+	var payload db.CreateUserParams
+	if err := c.BodyParser(&payload); err != nil {
+		return common.NewError(c, fiber.StatusBadRequest, "Error decoding payload")
+	}
+	count, err := h.userStore.CheckUserByEmail(payload.Email)
+	if err != nil {
+		return common.NewError(c, fiber.StatusInternalServerError, fmt.Sprintf("Error getting the user by email, %s", err))
+	}
+	if count != 0 {
+		return common.NewError(c, fiber.StatusConflict, "User with the same email already exists")
+	}
+
+	if err = h.userStore.CreateUser(c, payload); err != nil {
+		return err
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h *Handler)handleLogin(w http.ResponseWriter, r *http.Request) {
-	var payload types.RegisterUserPayload
-	err := json.NewDecoder(r.Body).Decode(payload)
-	// todo: check if user exists
+func (h *Handler) handleLogin(c *fiber.Ctx) error {
+	var payload types.LoginUserPayload
+	if err := c.BodyParser(&payload); err != nil {
+		return common.NewError(c, fiber.StatusBadRequest, "Error decoding payload")
+	}
 
-	// todo: create it
-	fmt.Println("Login")
+	user, err := h.userStore.userQueries.GetUserByEmail(c.Context(), payload.Email)
+	if err != nil {
+		return common.NewError(c, fiber.StatusConflict, "Credentials not found")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password)); err != nil {
+		return common.NewError(c, fiber.StatusConflict, "Credentials not found")
+	}
+	token := jwt.New(jwt.SigningMethodHS512)
+	secretKey := []byte(config.Envs.SecretKey)
+	signedToken, err := token.SignedString(secretKey)
+	if err != nil {
+		fmt.Println(err)
+		return common.NewError(c, fiber.StatusInternalServerError, "Error generating token")
+	}
+	//todo: send token
+	response := types.ResponseToken{
+		Token: signedToken,
+	}
+	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func (h *Handler)getUsers(w http.ResponseWriter, r *http.Request) {
-	// todo: get json payload
-	// todo: check if user exists
-	// todo: create it
+func (h *Handler) getUsers(c *fiber.Ctx) error {
 	fmt.Println("users")
+	return c.SendStatus(fiber.StatusOK)
 }

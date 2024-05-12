@@ -1,22 +1,43 @@
 package user
 
 import (
+	"championForge/common"
 	"championForge/db"
 	"context"
+
+	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
+
+type UserStore interface {
+	CheckUserByEmail(email string) (int64, error)
+}
 
 type Store struct {
 	userQueries *db.Queries
 }
 
-func NewStore(userQueries *db.Queries) *Store {
-	return &Store{userQueries: userQueries}
+func NewStore(userQueries *db.Queries) Store {
+	return Store{userQueries: userQueries}
 }
 
-func (s *Store) GetUserByEmail(email string) (*db.User, error) {
-	user, err := s.userQueries.GetUserByEmail(context.Background(), email)
+func (s *Store) CheckUserByEmail(email string) (int64, error) {
+	count, err := s.userQueries.CheckUserByEmail(context.Background(), email)
 	if err != nil {
-        return nil, err
+        return 0, err
     }
-    return &user, nil
+    return count, nil
+}
+
+func (s *Store) CreateUser(c *fiber.Ctx, userParams db.CreateUserParams) error {
+	var hashed []byte
+	hashed, err := bcrypt.GenerateFromPassword([]byte(userParams.Password), 8)
+	if err != nil {
+        return common.NewError(c, fiber.StatusInternalServerError, "Error hashing password")
+    }
+	userParams.Password = string(hashed)
+	if err := s.userQueries.CreateUser(c.Context(), userParams); err != nil {
+        return common.NewError(c, fiber.StatusInternalServerError, "Error creating user")
+    }
+    return nil
 }

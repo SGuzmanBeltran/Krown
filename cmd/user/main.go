@@ -6,16 +6,15 @@ import (
 	"championForge/services/user"
 	"context"
 	"log"
-	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/jackc/pgx/v5"
 )
 
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	app := fiber.New()
+	app.Use(logger.New())
 
 	ctx := context.Background()
 
@@ -28,10 +27,13 @@ func main() {
 	userQueries := db.New(conn)
 	userStore := user.NewStore(userQueries)
 	userHandler := user.NewHandler(userStore)
-	userHandler.RegisterRoutes(r)
+
+	api := app.Group("/api")
+	v1 := api.Group("/v1")
+	userHandler.RegisterRoutes(v1)
 
 	log.Println("User service listening on 3000")
-	err = http.ListenAndServe(":3000", r)
+	err = app.Listen(":3000")
 	if(err != nil){
 		log.Fatal("Could init User service", err)
 	}

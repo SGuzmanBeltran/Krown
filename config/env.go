@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	DBUrl string
+	SecretKey string
 }
 
 var Envs = initConfig()
@@ -17,6 +18,7 @@ func initConfig() Config {
 	godotenv.Load()
 	return Config{
 		DBUrl: getEnv("DB_URL"),
+		SecretKey: getEnv("SECRET_KEY"),
 	}
 }
 
