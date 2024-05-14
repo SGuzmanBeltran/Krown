@@ -5,6 +5,12 @@ type LoginUserPayload struct {
 	Password string `json:"password"`
 }
 
+type ServiceResponse struct {
+	Message string `json:"message"`
+	Status int `json:"status"`
+}
+
+
 type Response struct {
 	Message string `json:"message"`
 }

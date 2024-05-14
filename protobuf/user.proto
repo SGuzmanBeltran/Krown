@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "championForge/common/user";
+
+service AuthService {
+    rpc ValidateAuth(AuthRequest) returns (AuthResponse) {}
+}
+
+message AuthRequest {
+    string Token = 1;
+}
+
+message AuthResponse {
+    bool Valid = 1;
+}

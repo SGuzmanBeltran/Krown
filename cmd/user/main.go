@@ -1,6 +1,7 @@
 package main
 
 import (
+	"championForge/cmd/user/transport"
 	"championForge/config"
 	"championForge/db"
 	"championForge/services/user"
@@ -13,6 +14,9 @@ import (
 )
 
 func main() {
+	grpcServer := transport.NewGRPCServer(":9001")
+	go grpcServer.Run()
+
 	app := fiber.New()
 	app.Use(logger.New())
 
@@ -26,7 +30,8 @@ func main() {
 
 	userQueries := db.New(conn)
 	userStore := user.NewStore(userQueries)
-	userHandler := user.NewHandler(userStore)
+	userService := user.NewUserService(userStore)
+	userHandler := user.NewHandler(userService)
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
