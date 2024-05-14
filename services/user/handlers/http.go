@@ -1,33 +1,34 @@
-package user
+package handler
 
 import (
-	"championForge/common/types"
-	"championForge/db"
-	"championForge/utils"
+	"krown/common/types"
+	"krown/db"
+	"krown/services/user"
+	"krown/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type Handler struct {
-	userService *UserService
+type HttpHandler struct {
+	userService *user.UserService
 }
 
-func NewHandler(userService *UserService) *Handler {
-	return &Handler{userService}
+func NewHandler(userService *user.UserService) *HttpHandler {
+	return &HttpHandler{userService}
 }
 
-func (h *Handler) RegisterRoutes(router fiber.Router) {
+func (h *HttpHandler) RegisterRoutes(router fiber.Router) {
 	router.Post("/register", h.handleRegister)
 	router.Post("/login", h.handleLogin)
 }
 
-func (h *Handler) handleRegister(c *fiber.Ctx) error {
+func (h *HttpHandler) handleRegister(c *fiber.Ctx) error {
 	var payload db.CreateUserParams
 	if err := c.BodyParser(&payload); err != nil {
 		return utils.DirectResponse(c, fiber.StatusBadRequest, "Error decoding payload")
 	}
 
-	err := h.userService.register(c, payload)
+	err := h.userService.Register(c, payload)
 	if err != nil {
 		return utils.ServiceResponse(c, err)
 	}
@@ -35,12 +36,12 @@ func (h *Handler) handleRegister(c *fiber.Ctx) error {
 	return utils.DirectResponse(c, fiber.StatusOK, "User created")
 }
 
-func (h *Handler) handleLogin(c *fiber.Ctx) error {
+func (h *HttpHandler) handleLogin(c *fiber.Ctx) error {
 	var payload types.LoginUserPayload
 	if err := c.BodyParser(&payload); err != nil {
 		return utils.DirectResponse(c, fiber.StatusBadRequest, "Error decoding payload")
 	}
-	signedToken, err := h.userService.login(c, payload)
+	signedToken, err := h.userService.Login(c, payload)
 	if err != nil {
 		return utils.ServiceResponse(c, err)
 	}

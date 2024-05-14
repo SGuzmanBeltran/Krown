@@ -1,10 +1,10 @@
 package user
 
 import (
-	"championForge/common/types"
-	"championForge/db"
-	"championForge/utils"
 	"context"
+	"krown/common/types"
+	"krown/db"
+	"krown/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"

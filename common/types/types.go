@@ -1,5 +1,10 @@
 package types
 
+import (
+	"context"
+	protouser "krown/services/genproto/user"
+)
+
 type LoginUserPayload struct {
 	Email string  `json:"email"`
 	Password string `json:"password"`
@@ -17,4 +22,8 @@ type Response struct {
 
 type ResponseToken struct {
 	Token string `json:"token"`
+}
+
+type UserService interface {
+	ValidateAuth(context.Context, *protouser.AuthRequest) error
 }

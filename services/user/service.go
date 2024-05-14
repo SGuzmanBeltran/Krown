@@ -1,11 +1,13 @@
 package user
 
 import (
-	"championForge/common/types"
-	"championForge/config"
-	"championForge/db"
-	"championForge/utils"
+	"context"
 	"fmt"
+	"krown/common/types"
+	"krown/config"
+	"krown/db"
+	protouser "krown/services/genproto/user"
+	"krown/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -21,7 +23,7 @@ func NewUserService(userStore *Store) *UserService {
 	return &UserService{userStore}
 }
 
-func (s *UserService) register(c *fiber.Ctx, payload db.CreateUserParams) *types.ServiceResponse {
+func (s *UserService) Register(c *fiber.Ctx, payload db.CreateUserParams) *types.ServiceResponse {
 	count, err := s.userStore.CheckUserByEmail(payload.Email)
 	if err != nil {
 		return utils.NewServiceResponse(fiber.StatusInternalServerError, fmt.Sprintf("Error getting the user by email, %s", err))
@@ -36,7 +38,7 @@ func (s *UserService) register(c *fiber.Ctx, payload db.CreateUserParams) *types
 	return nil
 }
 
-func (s *UserService) login(c *fiber.Ctx, payload types.LoginUserPayload) (string, *types.ServiceResponse) {
+func (s *UserService) Login(c *fiber.Ctx, payload types.LoginUserPayload) (string, *types.ServiceResponse) {
 	user, err := s.userStore.userQueries.GetUserByEmail(c.Context(), payload.Email)
 	if err != nil {
 		return "", utils.NewServiceResponse(fiber.StatusConflict, "Credentials not found")
@@ -53,4 +55,23 @@ func (s *UserService) login(c *fiber.Ctx, payload types.LoginUserPayload) (strin
 		return "", utils.NewServiceResponse(fiber.StatusInternalServerError, "Error generating token")
 	}
 	return signedToken, nil
+}
+
+//TODO: review
+func (u *UserService) ValidateAuth(c context.Context, req *protouser.AuthRequest) error {
+	tokenString := req.Token
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return config.Envs.SecretKey, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }

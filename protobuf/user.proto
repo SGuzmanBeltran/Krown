@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "championForge/common/user";
+option go_package = "krown/services/genproto/protouser";
 
 service AuthService {
     rpc ValidateAuth(AuthRequest) returns (AuthResponse) {}

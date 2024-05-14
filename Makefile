@@ -19,5 +19,5 @@ db-reset:
 proto-gen:
 	@protoc \
 		--proto_path=protobuf "protobuf/user.proto" \
-		--go_out=services/user/genproto/ --go_opt=paths=source_relative \
-		--go-grpc_out=services/user/genproto/ --go-grpc_opt=paths=source_relative
+		--go_out=services/genproto/user --go_opt=paths=source_relative \
+		--go-grpc_out=services/genproto/user --go-grpc_opt=paths=source_relative

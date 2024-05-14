@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"championForge/common/types"
+	"krown/common/types"
 
 	"github.com/gofiber/fiber/v2"
 )

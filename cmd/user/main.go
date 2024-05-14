@@ -1,11 +1,12 @@
 package main
 
 import (
-	"championForge/cmd/user/transport"
-	"championForge/config"
-	"championForge/db"
-	"championForge/services/user"
 	"context"
+	"krown/cmd/user/transport"
+	"krown/config"
+	"krown/db"
+	"krown/services/user"
+	handler "krown/services/user/handlers"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,9 +15,6 @@ import (
 )
 
 func main() {
-	grpcServer := transport.NewGRPCServer(":9001")
-	go grpcServer.Run()
-
 	app := fiber.New()
 	app.Use(logger.New())
 
@@ -31,7 +29,10 @@ func main() {
 	userQueries := db.New(conn)
 	userStore := user.NewStore(userQueries)
 	userService := user.NewUserService(userStore)
-	userHandler := user.NewHandler(userService)
+	userHandler := handler.NewHandler(userService)
+
+	grpcServer := transport.NewGRPCServer(":9001")
+	go grpcServer.Run(userStore)
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")

@@ -1,4 +1,4 @@
-module championForge
+module krown
 
 go 1.22.2
 
