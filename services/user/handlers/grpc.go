@@ -20,15 +20,14 @@ func NewGrpcUserService(grpc *grpc.Server, userService types.UserService) {
 }
 
 func (h *UserGrpcHanlder) ValidateAuth(ctx context.Context, req *protouser.AuthRequest) (*protouser.AuthResponse, error) {
-	h.userService.ValidateAuth(ctx, req)
-
-	err := h.userService.ValidateAuth(ctx, req)
+	claims, err := h.userService.ValidateAuth(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &protouser.AuthResponse{
 		Valid: true,
+		Claims: claims,
 	}
 
 	return res, nil

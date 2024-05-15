@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"krown/common/types"
 	"krown/config"
@@ -48,7 +49,11 @@ func (s *UserService) Login(c *fiber.Ctx, payload types.LoginUserPayload) (strin
 		return "", utils.NewServiceResponse(fiber.StatusConflict, "Credentials not found")
 	}
 
-	token := jwt.New(jwt.SigningMethodHS512)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"username": user.Username,
+		"email": user.Email,
+	})
+
 	secretKey := []byte(config.Envs.SecretKey)
 	signedToken, err := token.SignedString(secretKey)
 	if err != nil {
@@ -57,21 +62,22 @@ func (s *UserService) Login(c *fiber.Ctx, payload types.LoginUserPayload) (strin
 	return signedToken, nil
 }
 
-//TODO: review
-func (u *UserService) ValidateAuth(c context.Context, req *protouser.AuthRequest) error {
+func (u *UserService) ValidateAuth(c context.Context, req *protouser.AuthRequest) (*protouser.AuthClaims, error) {
 	tokenString := req.Token
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	jwtClaims := &types.JWTClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, jwtClaims, func(token *jwt.Token) (interface{}, error) {
 		return config.Envs.SecretKey, nil
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, errors.New("invalid token")
 	}
 
-	return nil
+	claims := jwtClaims.ParseToGRpcClaims()
+
+	return claims, nil
 }

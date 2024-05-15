@@ -3,6 +3,8 @@ package types
 import (
 	"context"
 	protouser "krown/services/genproto/user"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type LoginUserPayload struct {
@@ -25,5 +27,18 @@ type ResponseToken struct {
 }
 
 type UserService interface {
-	ValidateAuth(context.Context, *protouser.AuthRequest) error
+	ValidateAuth(context.Context, *protouser.AuthRequest) (*protouser.AuthClaims ,error)
+}
+
+type JWTClaims struct {
+	Username string
+    Email string
+	jwt.RegisteredClaims
+}
+
+func (c *JWTClaims) ParseToGRpcClaims() *protouser.AuthClaims {
+	return &protouser.AuthClaims{
+		Username: c.Username,
+		Email: c.Email,
+	}
 }

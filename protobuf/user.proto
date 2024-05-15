@@ -12,4 +12,10 @@ message AuthRequest {
 
 message AuthResponse {
     bool Valid = 1;
+    AuthClaims Claims = 2;
+}
+
+message AuthClaims {
+    string Username = 1;
+    string Email = 2;
 }
