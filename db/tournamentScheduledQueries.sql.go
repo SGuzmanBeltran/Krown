@@ -7,7 +7,57 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createScheduledTournament = `-- name: CreateScheduledTournament :one
+INSERT INTO scheduled_tournaments (
+    name,
+    entry_fee,
+    start_time,
+    recurrence_pattern,
+    recurrence_start_timestamp,
+    recurrence_end_timestamp,
+    must_renew
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, name, entry_fee, start_time, recurrence_pattern, recurrence_start_timestamp, recurrence_end_timestamp, must_renew
+`
+
+type CreateScheduledTournamentParams struct {
+	Name                     string
+	EntryFee                 int64
+	StartTime                pgtype.Timestamp
+	RecurrencePattern        string
+	RecurrenceStartTimestamp pgtype.Timestamp
+	RecurrenceEndTimestamp   pgtype.Timestamp
+	MustRenew                pgtype.Bool
+}
+
+func (q *Queries) CreateScheduledTournament(ctx context.Context, arg CreateScheduledTournamentParams) (ScheduledTournament, error) {
+	row := q.db.QueryRow(ctx, createScheduledTournament,
+		arg.Name,
+		arg.EntryFee,
+		arg.StartTime,
+		arg.RecurrencePattern,
+		arg.RecurrenceStartTimestamp,
+		arg.RecurrenceEndTimestamp,
+		arg.MustRenew,
+	)
+	var i ScheduledTournament
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.EntryFee,
+		&i.StartTime,
+		&i.RecurrencePattern,
+		&i.RecurrenceStartTimestamp,
+		&i.RecurrenceEndTimestamp,
+		&i.MustRenew,
+	)
+	return i, err
+}
 
 const getScheduledTournament = `-- name: GetScheduledTournament :one
 SELECT id, name, entry_fee, start_time, recurrence_pattern, recurrence_start_timestamp, recurrence_end_timestamp, must_renew FROM scheduled_tournaments WHERE id = $1
