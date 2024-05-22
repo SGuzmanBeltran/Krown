@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = "krown/services/genproto/proto_tournament";
+
+service TournamentService {
+    rpc GetTournaments(GetTournamentsReq) returns (GetTournamentsRes) {}
+    rpc GetTournament(GetTournamentReq) returns (GetTournamentRes) {}
+}
+
+message GetTournamentsReq {
+    int64 StartTime = 1;
+    int64 FinalTime = 2;
+}
+
+message GetTournamentsRes {
+    repeated Tournament Tournaments = 1;
+}
+
+message GetTournamentReq {
+    int64 TournamentId = 1;
+}
+
+message GetTournamentRes {
+    Tournament Tournament = 1;
+}
+
+message Tournament {
+    int64 Id = 1;
+    string Name = 2;
+    int64 EntryFee = 3;
+    int64 StartTime = 4;
+}
