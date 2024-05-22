@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "krown/services/genproto/proto_scheduled";
+
+service ScheduledService {
+    rpc GetScheduleds(GetScheduledsReq) returns (GetScheduledsRes) {}
+    rpc GetScheduled(GetScheduledReq) returns (GetScheduledRes) {}
+    rpc CreateScheduled(CreateScheduledReq) returns (CreateScheduledRes) {}
+}
+
+message GetScheduledsReq {}
+
+message GetScheduledsRes {
+    repeated Scheduled Scheduleds = 1;
+}
+
+message GetScheduledReq {
+    int64 ScheduledId = 1;
+}
+
+message GetScheduledRes {
+    Scheduled Scheduled = 1;
+}
+
+message CreateScheduledReq {
+    CreateScheduled Scheduled = 1;
+}
+
+message CreateScheduledRes {
+    Scheduled Scheduled = 1;
+}
+
+message Scheduled {
+    int64 Id = 1;
+    string Name = 2;
+    int64 EntryFee = 3;
+    int64 StartTime = 4;
+    string RecurrencePattern = 5;
+    int64 RecurrenceStartTimestamp = 6;
+    int64 RecurrenceEndTimestamp = 7;
+    bool MustRenew = 8;
+}
+
+message CreateScheduled {
+    string Name = 2;
+    int64 EntryFee = 3;
+    int64 StartTime = 4;
+    string RecurrencePattern = 5;
+    int64 RecurrenceStartTimestamp = 6;
+    int64 RecurrenceEndTimestamp = 7;
+    bool MustRenew = 8;
+}
