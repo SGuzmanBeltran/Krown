@@ -1,6 +1,8 @@
 include .env
 export
 
+PROTO_NAME ?= user
+
 run-user:
 	@go run cmd/user/main.go
 
@@ -18,6 +20,6 @@ db-reset:
 
 proto-gen:
 	@protoc \
-		--proto_path=protobuf "protobuf/user.proto" \
-		--go_out=services/genproto/user --go_opt=paths=source_relative \
-		--go-grpc_out=services/genproto/user --go-grpc_opt=paths=source_relative
+		--proto_path=protobuf "protobuf/$(PROTO_NAME).proto" \
+		--go_out=services/genproto/$(PROTO_NAME) --go_opt=paths=source_relative \
+		--go-grpc_out=services/genproto/$(PROTO_NAME) --go-grpc_opt=paths=source_relative
