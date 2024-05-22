@@ -11,7 +11,7 @@ import (
 type ScheduledTournament struct {
 	ID                       int64
 	Name                     string
-	EntryFee                 int32
+	EntryFee                 int64
 	StartTime                pgtype.Timestamp
 	RecurrencePattern        string
 	RecurrenceStartTimestamp pgtype.Timestamp
