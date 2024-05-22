@@ -3,8 +3,8 @@ package tournament
 import (
 	"context"
 	"fmt"
-	"krown/db"
 	proto_tournament "krown/services/genproto/tournament"
+	"krown/services/tournament/types"
 )
 
 type TournamentService struct {
@@ -20,7 +20,7 @@ func (t *TournamentService) GetTournaments(c context.Context, req *proto_tournam
 	if err != nil {
 		fmt.Println("Error")
 	}
-	protoTournatments, err := convertDBTournamentsToProtoTournaments(dbTournaments)
+	protoTournatments, err := types.ConvertDBTournamentsToProtoTournaments(dbTournaments)
 	if err != nil {
 		fmt.Println("Error, converting tournaments")
 	}
@@ -36,7 +36,7 @@ func (t *TournamentService) GetTournament(c context.Context, req *proto_tourname
 		fmt.Println(err)
 		return nil, err
 	}
-	protoTournament, err := convertDBTournamentToProto(*dbTournament)
+	protoTournament, err := types.ConvertDBTournamentToProto(*dbTournament)
 	if err != nil {
 		return nil, err
 	}
@@ -44,35 +44,4 @@ func (t *TournamentService) GetTournament(c context.Context, req *proto_tourname
 		Tournament: protoTournament,
 	}
 	return tournaments, nil
-}
-
-func convertDBTournamentsToProtoTournaments(dbtournaments []db.Tournament) ([]*proto_tournament.Tournament, error) {
-	var protoTournaments []*proto_tournament.Tournament
-
-	for _, dbt := range dbtournaments {
-		// Convert pgtype.Timestamp to int64
-		pt, err := convertDBTournamentToProto(dbt)
-		if err != nil {
-			return nil, err
-		}
-		protoTournaments = append(protoTournaments, pt)
-	}
-
-	return protoTournaments, nil
-}
-
-func convertDBTournamentToProto(dbtournament db.Tournament) (*proto_tournament.Tournament, error) {
-	var protoTournaments *proto_tournament.Tournament
-
-	// Convert pgtype.Timestamp to int64
-	startTime := dbtournament.StartTime.Time.Unix()
-
-	protoTournaments = &proto_tournament.Tournament{
-		Id:        dbtournament.ID,
-		Name:      dbtournament.Name,
-		EntryFee:  int64(dbtournament.EntryFee),
-		StartTime: startTime, // Ensure startTime is in milliseconds
-	}
-
-	return protoTournaments, nil
 }
