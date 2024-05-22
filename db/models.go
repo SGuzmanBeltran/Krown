@@ -4,6 +4,28 @@
 
 package db
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type ScheduledTournament struct {
+	ID                       int64
+	Name                     string
+	EntryFee                 int32
+	StartTime                pgtype.Timestamp
+	RecurrencePattern        string
+	RecurrenceStartTimestamp pgtype.Timestamp
+	RecurrenceEndTimestamp   pgtype.Timestamp
+	MustRenew                pgtype.Bool
+}
+
+type Tournament struct {
+	ID        int64
+	Name      string
+	EntryFee  int32
+	StartTime pgtype.Timestamp
+}
+
 type User struct {
 	ID       int64
 	Username string
