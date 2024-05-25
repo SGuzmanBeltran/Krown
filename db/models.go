@@ -22,7 +22,7 @@ type ScheduledTournament struct {
 type Tournament struct {
 	ID        int64
 	Name      string
-	EntryFee  int32
+	EntryFee  int64
 	StartTime pgtype.Timestamp
 }
 

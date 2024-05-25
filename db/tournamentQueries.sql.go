@@ -28,7 +28,7 @@ func (q *Queries) GetTournament(ctx context.Context, id int64) (Tournament, erro
 }
 
 const getTournaments = `-- name: GetTournaments :many
-SELECT id, name, entry_fee, start_time FROM tournaments WHERE start_time > $1 and start_time < $2
+SELECT id, name, entry_fee, start_time FROM tournaments WHERE start_time >= $1 and start_time <= $2
 `
 
 type GetTournamentsParams struct {
