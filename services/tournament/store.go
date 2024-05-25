@@ -2,6 +2,7 @@ package tournament
 
 import (
 	"context"
+	"fmt"
 	"krown/db"
 	proto_tournament "krown/services/genproto/tournament"
 	"time"
@@ -17,20 +18,21 @@ func NewTournamentStore(tournamentQueries *db.Queries) *TournamentStore {
 	return &TournamentStore{tournamentQueries}
 }
 
-func (t *TournamentStore) GetTournaments(req *proto_tournament.GetTournamentsReq) ([]db.Tournament, error) {
+func (t *TournamentStore) GetTournaments(req *proto_tournament.GetTournamentsReq) ([]*db.Tournament, error) {
 	st := time.Unix(req.StartTime, 0)
 	ft := time.Unix(req.FinalTime, 0)
 
 	stTimestamp := &pgtype.Timestamp{
-		Time: st,
+		Time: st.UTC(),
 		Valid: true,
 	}
 
 	ftTimestamp := &pgtype.Timestamp{
-		Time: ft,
+		Time: ft.UTC(),
 		Valid: true,
 	}
 
+	fmt.Println(stTimestamp.Time.UTC(), ftTimestamp.Time.UTC())
 	params := &db.GetTournamentsParams{
 		StartTime: *stTimestamp,
 		StartTime_2: *ftTimestamp,
@@ -41,7 +43,12 @@ func (t *TournamentStore) GetTournaments(req *proto_tournament.GetTournamentsReq
 		return nil, err
 	}
 
-	return tournaments, nil
+	var result []*db.Tournament
+	for _, dbt := range tournaments {
+		result = append(result, &dbt)
+	}
+
+	return result, nil
 }
 
 func (t *TournamentStore) GetTournament(id int64) (*db.Tournament, error) {
@@ -51,4 +58,13 @@ func (t *TournamentStore) GetTournament(id int64) (*db.Tournament, error) {
 	}
 
 	return &tournament, nil
+}
+
+func (t *TournamentStore) CreateTournaments(tournaments []db.BatchCreateParams) ([]*db.Tournament, error) {
+	batchResults := t.tournamentQueries.BatchCreate(context.Background(), tournaments)
+	var tournamentsResults []*db.Tournament
+	batchResults.QueryRow(func(i int, t db.Tournament, err error) {
+		tournamentsResults = append(tournamentsResults, &t)
+	})
+	return tournamentsResults, nil;
 }

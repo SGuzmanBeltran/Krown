@@ -33,3 +33,12 @@ func (h *TournamentGrpcHandler) GetTournament(ctx context.Context, req *proto_to
 	}
 	return tournament, nil
 }
+
+func (h *TournamentGrpcHandler) CreateTournaments(ctx context.Context, req *proto_tournament.CreateTournamentReq) (*proto_tournament.CreateTournamentRes, error) {
+	createTournaments := types.ConvertProtoCreateTournamentsToCreateTournaments(req.CreateTournaments)
+	tournaments, err := h.tournamentService.CreateTournaments(ctx, createTournaments)
+	if (err != nil) {
+		return nil, err
+	}
+	return tournaments, nil
+}

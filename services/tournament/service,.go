@@ -3,6 +3,7 @@ package tournament
 import (
 	"context"
 	"fmt"
+	"krown/db"
 	proto_tournament "krown/services/genproto/tournament"
 	"krown/services/tournament/types"
 )
@@ -36,7 +37,7 @@ func (t *TournamentService) GetTournament(c context.Context, req *proto_tourname
 		fmt.Println(err)
 		return nil, err
 	}
-	protoTournament, err := types.ConvertDBTournamentToProto(*dbTournament)
+	protoTournament, err := types.ConvertDBTournamentToProto(dbTournament)
 	if err != nil {
 		return nil, err
 	}
@@ -44,4 +45,24 @@ func (t *TournamentService) GetTournament(c context.Context, req *proto_tourname
 		Tournament: protoTournament,
 	}
 	return tournaments, nil
+}
+
+func (t *TournamentService) CreateTournaments(c context.Context, tournaments []*types.CreateTournament) (*proto_tournament.CreateTournamentRes, error) {
+	var storeTournamentParams []db.BatchCreateParams
+	for _, dbt := range tournaments {
+		pt := db.BatchCreateParams(*dbt)
+		storeTournamentParams = append(storeTournamentParams, pt)
+	}
+	createTournaments, err := t.tournamentStore.CreateTournaments(storeTournamentParams)
+	if err != nil {
+		return nil, err
+	}
+	protoTournaments, err := types.ConvertDBTournamentsToProtoTournaments(createTournaments)
+	if err != nil {
+		return nil, err
+	}
+	response := &proto_tournament.CreateTournamentRes{
+		Tournaments: protoTournaments,
+	}
+	return response, nil
 }
