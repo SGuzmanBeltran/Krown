@@ -5,8 +5,10 @@ option go_package = "krown/services/genproto/proto_tournament";
 service TournamentService {
     rpc GetTournaments(GetTournamentsReq) returns (GetTournamentsRes) {}
     rpc GetTournament(GetTournamentReq) returns (GetTournamentRes) {}
+    rpc CreateTournaments(CreateTournamentReq) returns (CreateTournamentRes) {}
 }
 
+//Get All tournaments based on the dates
 message GetTournamentsReq {
     int64 StartTime = 1;
     int64 FinalTime = 2;
@@ -16,6 +18,7 @@ message GetTournamentsRes {
     repeated Tournament Tournaments = 1;
 }
 
+//Get a tournament
 message GetTournamentReq {
     int64 TournamentId = 1;
 }
@@ -24,8 +27,25 @@ message GetTournamentRes {
     Tournament Tournament = 1;
 }
 
+//Create Tournaments
+message CreateTournamentReq {
+    repeated CreateTournamentDTO CreateTournaments = 1;
+}
+
+message CreateTournamentRes {
+    repeated Tournament Tournaments = 1;
+}
+
+// Types
 message Tournament {
     int64 Id = 1;
+    string Name = 2;
+    int64 EntryFee = 3;
+    int64 StartTime = 4;
+}
+
+//DTOs
+message CreateTournamentDTO {
     string Name = 2;
     int64 EntryFee = 3;
     int64 StartTime = 4;

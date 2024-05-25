@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TournamentService_GetTournaments_FullMethodName = "/TournamentService/GetTournaments"
-	TournamentService_GetTournament_FullMethodName  = "/TournamentService/GetTournament"
+	TournamentService_GetTournaments_FullMethodName    = "/TournamentService/GetTournaments"
+	TournamentService_GetTournament_FullMethodName     = "/TournamentService/GetTournament"
+	TournamentService_CreateTournaments_FullMethodName = "/TournamentService/CreateTournaments"
 )
 
 // TournamentServiceClient is the client API for TournamentService service.
@@ -29,6 +30,7 @@ const (
 type TournamentServiceClient interface {
 	GetTournaments(ctx context.Context, in *GetTournamentsReq, opts ...grpc.CallOption) (*GetTournamentsRes, error)
 	GetTournament(ctx context.Context, in *GetTournamentReq, opts ...grpc.CallOption) (*GetTournamentRes, error)
+	CreateTournaments(ctx context.Context, in *CreateTournamentReq, opts ...grpc.CallOption) (*CreateTournamentRes, error)
 }
 
 type tournamentServiceClient struct {
@@ -57,12 +59,22 @@ func (c *tournamentServiceClient) GetTournament(ctx context.Context, in *GetTour
 	return out, nil
 }
 
+func (c *tournamentServiceClient) CreateTournaments(ctx context.Context, in *CreateTournamentReq, opts ...grpc.CallOption) (*CreateTournamentRes, error) {
+	out := new(CreateTournamentRes)
+	err := c.cc.Invoke(ctx, TournamentService_CreateTournaments_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TournamentServiceServer is the server API for TournamentService service.
 // All implementations must embed UnimplementedTournamentServiceServer
 // for forward compatibility
 type TournamentServiceServer interface {
 	GetTournaments(context.Context, *GetTournamentsReq) (*GetTournamentsRes, error)
 	GetTournament(context.Context, *GetTournamentReq) (*GetTournamentRes, error)
+	CreateTournaments(context.Context, *CreateTournamentReq) (*CreateTournamentRes, error)
 	mustEmbedUnimplementedTournamentServiceServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedTournamentServiceServer) GetTournaments(context.Context, *Get
 }
 func (UnimplementedTournamentServiceServer) GetTournament(context.Context, *GetTournamentReq) (*GetTournamentRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTournament not implemented")
+}
+func (UnimplementedTournamentServiceServer) CreateTournaments(context.Context, *CreateTournamentReq) (*CreateTournamentRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTournaments not implemented")
 }
 func (UnimplementedTournamentServiceServer) mustEmbedUnimplementedTournamentServiceServer() {}
 
@@ -125,6 +140,24 @@ func _TournamentService_GetTournament_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TournamentService_CreateTournaments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTournamentReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TournamentServiceServer).CreateTournaments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TournamentService_CreateTournaments_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TournamentServiceServer).CreateTournaments(ctx, req.(*CreateTournamentReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TournamentService_ServiceDesc is the grpc.ServiceDesc for TournamentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var TournamentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTournament",
 			Handler:    _TournamentService_GetTournament_Handler,
+		},
+		{
+			MethodName: "CreateTournaments",
+			Handler:    _TournamentService_CreateTournaments_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
