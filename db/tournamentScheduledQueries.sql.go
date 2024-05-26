@@ -111,3 +111,36 @@ func (q *Queries) GetScheduledTournaments(ctx context.Context) ([]ScheduledTourn
 	}
 	return items, nil
 }
+
+const getScheduledTournamentsByStartTime = `-- name: GetScheduledTournamentsByStartTime :many
+SELECT id, name, entry_fee, start_time, recurrence_pattern, recurrence_start_timestamp, recurrence_end_timestamp, must_renew FROM scheduled_tournaments where start_time = $1
+`
+
+func (q *Queries) GetScheduledTournamentsByStartTime(ctx context.Context, startTime pgtype.Timestamp) ([]ScheduledTournament, error) {
+	rows, err := q.db.Query(ctx, getScheduledTournamentsByStartTime, startTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ScheduledTournament
+	for rows.Next() {
+		var i ScheduledTournament
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.EntryFee,
+			&i.StartTime,
+			&i.RecurrencePattern,
+			&i.RecurrenceStartTimestamp,
+			&i.RecurrenceEndTimestamp,
+			&i.MustRenew,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
