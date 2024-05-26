@@ -2,16 +2,21 @@ package scheduled
 
 import (
 	"context"
+	"fmt"
 	proto_scheduled "krown/services/genproto/scheduled"
+	proto_tournament "krown/services/genproto/tournament"
 	"krown/services/scheduled/types"
+
+	"google.golang.org/grpc"
 )
 
 type ScheduledService struct {
 	scheduledStore *ScheduledStore
+	tournamentConn *grpc.ClientConn
 }
 
-func NewScheduledService(scheduledStore *ScheduledStore) *ScheduledService {
-	return &ScheduledService{scheduledStore}
+func NewScheduledService(scheduledStore *ScheduledStore, tournamentConn *grpc.ClientConn) *ScheduledService {
+	return &ScheduledService{scheduledStore, tournamentConn}
 }
 
 func (s *ScheduledService) GetScheduleds(c context.Context, req *proto_scheduled.GetScheduledsReq) (*proto_scheduled.GetScheduledsRes, error) {
@@ -62,4 +67,17 @@ func (s *ScheduledService) CreateScheduled(c context.Context, req *proto_schedul
 		Scheduled: scheduledProto,
 	}
 	return scheduled, nil
+}
+
+func (s *ScheduledService) GenerateTournaments(date int64) {
+	createdScheduled, err := s.scheduledStore.GetScheduledsByStartTime(date)
+	if err != nil {
+		fmt.Println("Error getting scheduled tournaments")
+	}
+	tClient := proto_tournament.NewTournamentServiceClient(s.tournamentConn)
+	protoCreateTournaments := types.ConvertDBCreateScheduledToProtoTournaments(createdScheduled)
+	request := &proto_tournament.CreateTournamentReq{
+		CreateTournaments: protoCreateTournaments,
+	}
+	tClient.CreateTournaments(context.Background(), request)
 }

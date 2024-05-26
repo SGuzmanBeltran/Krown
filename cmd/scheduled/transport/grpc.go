@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"krown/common"
 	"krown/services/scheduled"
 	"krown/services/scheduled/handlers"
 	"log"
@@ -22,9 +23,10 @@ func (s *ScheduledgRPCServer) Run(scheduledStore *scheduled.ScheduledStore) erro
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
-
+	tournamentConn := common.NewGRPCClient(":9002")
+	defer tournamentConn.Close()
 	grpcServer := grpc.NewServer()
-	scheduledService := scheduled.NewScheduledService(scheduledStore)
+	scheduledService := scheduled.NewScheduledService(scheduledStore, tournamentConn)
 	handlers.NewGrpcScheduledService(grpcServer, scheduledService)
 
 	log.Println("Starting Scheduled gRPC server on", s.addr)

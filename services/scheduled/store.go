@@ -37,3 +37,12 @@ func (s *ScheduledStore) CreateScheduled(scheduled *db.CreateScheduledTournament
 	}
 	return &newScheduled, nil
 }
+
+func (s *ScheduledStore) GetScheduledsByStartTime(date int64) ([]db.ScheduledTournament, error) {
+	scheduled, err := s.queries.GetScheduledTournaments(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return scheduled, nil
+}
