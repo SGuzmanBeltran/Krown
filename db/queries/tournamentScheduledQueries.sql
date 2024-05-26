@@ -16,3 +16,6 @@ INSERT INTO scheduled_tournaments (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
+
+-- name: GetScheduledTournamentsByStartTime :many
+SELECT * FROM scheduled_tournaments where start_time = $1;
