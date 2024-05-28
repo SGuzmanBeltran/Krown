@@ -12,7 +12,7 @@ import (
 )
 
 const getTournament = `-- name: GetTournament :one
-SELECT id, name, entry_fee, start_time FROM tournaments WHERE id = $1
+SELECT id, name, entry_fee, start_time, is_finished FROM tournaments WHERE id = $1
 `
 
 func (q *Queries) GetTournament(ctx context.Context, id int64) (Tournament, error) {
@@ -23,12 +23,13 @@ func (q *Queries) GetTournament(ctx context.Context, id int64) (Tournament, erro
 		&i.Name,
 		&i.EntryFee,
 		&i.StartTime,
+		&i.IsFinished,
 	)
 	return i, err
 }
 
 const getTournaments = `-- name: GetTournaments :many
-SELECT id, name, entry_fee, start_time FROM tournaments WHERE start_time >= $1 and start_time <= $2
+SELECT id, name, entry_fee, start_time, is_finished FROM tournaments WHERE start_time >= $1 and start_time <= $2
 `
 
 type GetTournamentsParams struct {
@@ -50,6 +51,7 @@ func (q *Queries) GetTournaments(ctx context.Context, arg GetTournamentsParams) 
 			&i.Name,
 			&i.EntryFee,
 			&i.StartTime,
+			&i.IsFinished,
 		); err != nil {
 			return nil, err
 		}

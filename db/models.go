@@ -19,16 +19,42 @@ type ScheduledTournament struct {
 	MustRenew                pgtype.Bool
 }
 
+type Team struct {
+	ID                int64
+	Name              string
+	OwnerID           int32
+	PlayersCount      pgtype.Int4
+	TournamentsPlayed pgtype.Int4
+}
+
+type TeamsTournament struct {
+	ID                int64
+	TeamID            int32
+	TournamentID      int32
+	EnrollPayed       pgtype.Bool
+	TeamPosition      pgtype.Int4
+	TournamentsPlayed pgtype.Int4
+}
+
 type Tournament struct {
-	ID        int64
-	Name      string
-	EntryFee  int64
-	StartTime pgtype.Timestamp
+	ID         int64
+	Name       string
+	EntryFee   int64
+	StartTime  pgtype.Timestamp
+	IsFinished pgtype.Bool
 }
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Password string
+	ID         int64
+	Username   string
+	Email      string
+	Password   string
+	TeamsCount pgtype.Int4
+}
+
+type UsersTeam struct {
+	ID                int64
+	UserID            int32
+	TeamID            int32
+	TournamentsPlayed pgtype.Int4
 }

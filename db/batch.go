@@ -24,7 +24,7 @@ INSERT INTO tournaments (
     start_time
 ) VALUES (
     $1, $2, $3
-) RETURNING id, name, entry_fee, start_time
+) RETURNING id, name, entry_fee, start_time, is_finished
 `
 
 type BatchCreateBatchResults struct {
@@ -69,6 +69,7 @@ func (b *BatchCreateBatchResults) QueryRow(f func(int, Tournament, error)) {
 			&i.Name,
 			&i.EntryFee,
 			&i.StartTime,
+			&i.IsFinished,
 		)
 		if f != nil {
 			f(t, i, err)
